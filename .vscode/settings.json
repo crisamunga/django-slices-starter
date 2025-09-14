@@ -1,0 +1,49 @@
+{
+  "python.terminal.useEnvFile": true,
+  "editor.rulers": [88, 120],
+  "python.envFile": "${workspaceFolder}/.env",
+  "mypy-type-checker.reportingScope": "workspace",
+  "ruff.importStrategy": "fromEnvironment",
+  "terminal.integrated.profiles.linux": {
+    "django shell": {
+      "path": "/bin/bash",
+      "args": ["-c", "${workspaceFolder:src}/manage.py shell"],
+      "overrideName": true
+    }
+  },
+  "[json][jsonc][javascript][typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2,
+    "editor.formatOnSave": true
+  },
+  "[python]": {
+    "diffEditor.ignoreTrimWhitespace": false,
+    "editor.formatOnSave": true,
+    "gitlens.codeLens.symbolScopes": ["iModule"],
+    "editor.formatOnType": true,
+    "editor.wordBasedSuggestions": "off",
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
+  },
+  "[yaml]": {
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2,
+    "editor.autoIndent": "keep",
+    "diffEditor.ignoreTrimWhitespace": true,
+    "editor.quickSuggestions": {
+      "other": "on",
+      "comments": "off",
+      "strings": "off"
+    },
+    "editor.defaultFormatter": "redhat.vscode-yaml"
+  },
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/*.egg-info": true,
+    "**/*.pytest_cache": true,
+    "**/.mypy_cache/": true,
+    "**/*.ruff_cache": true
+  }
+}

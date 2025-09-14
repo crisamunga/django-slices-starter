@@ -1,0 +1,131 @@
+[project]
+name = "django-slices-starter"
+version = "0.1.0"
+description = "Starter project for Django using Slices architecture"
+readme = "README.md"
+requires-python = ">=3.13"
+license = { file = "LICENSE" }
+
+dependencies = [
+    "daphne>=4.2.1",
+    "django>=5.2.6",
+    "django-debug-toolbar>=6.0.0",
+    "django-ninja>=1.4.3",
+    "httpx>=0.28.1",
+    "opentelemetry-exporter-otlp>=1.37.0",
+    "opentelemetry-instrumentation-django>=0.58b0",
+    "opentelemetry-instrumentation-httpx>=0.58b0",
+    "opentelemetry-instrumentation-psycopg>=0.58b0",
+    "psycopg[binary]>=3.2.10",
+    "pydantic[email]>=2.11.9",
+    "python-dotenv>=1.1.1",
+    "redis>=6.4.0",
+    "restate-sdk>=0.9.1",
+    "strawberry-graphql[opentelemetry]>=0.282.0",
+]
+
+[dependency-groups]
+dev = [
+    "coverage>=7.10.6",
+    "detect-secrets>=1.5.0",
+    "django-stubs[compatible-mypy]>=5.2.5",
+    "factory-boy>=3.3.3",
+    "faker>=37.6.0",
+    "ipython>=9.5.0",
+    "mypy>=1.18.1",
+    "pre-commit>=4.3.0",
+    "pytest>=8.4.2",
+    "pytest-asyncio>=1.2.0",
+    "pytest-cov>=7.0.0",
+    "pytest-django>=4.11.1",
+    "pytest-mock>=3.15.0",
+    "pytest-xdist>=3.8.0",
+    "ruff>=0.13.0",
+]
+
+[tool.ruff]
+target-version = "py313"
+line-length = 120
+fix = true
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "PGH003", # Allow blanket type:ignore comments Because Django
+    "D", # Docstrings are not required
+    "EM", # Allow use of string arguments to exception calls
+    "TRY", # Allow use of bare except: clauses
+]
+
+[tool.ruff.lint.extend-per-file-ignores]
+".venv/*" = ["ALL"]  # These are external dependencies
+"src/manage.py" = ["ALL"] # This was written by Django
+"__init__.py" = [
+    "F401",  # Allow unused imports in __init__.py files
+    "F403", # Allow 'from module import *' in __init__.py files
+    "F405", # Allow undefined names in __init__.py files
+]
+"src/config/settings/*.py" = [
+    "F401",  # Allow unused imports in settings files
+    "F403", # Allow 'from module import *' in settings files
+    "F405", # Allow undefined names in settings files
+]
+"**/test*.py" = [
+    "S101", # Allow use of assert statements in test files
+    "PLR2004" # Allow magic values in comparisons
+]
+"**/conftest.py" = [
+    "S101", # Allow use of assert statements in test files
+    "PLR2004" # Allow magic values in comparisons
+]
+"**/tests/*" = [
+    "S101", # Allow use of assert statements in test files
+    "PLR2004" # Allow magic values in comparisons
+]
+
+[tool.ruff.lint.pylint]
+max-args = 10
+
+[tool.coverage.run]
+command_line = "-m pytest"
+branch = true
+source = ["src"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+    "def __repr__",
+    "def __str__",
+    "if TYPE_CHECKING",
+]
+show_missing = true
+skip_covered = true
+omit = [
+    "manage.py",
+    "config/settings/*",
+    "*/migrations/*",
+    "config/asgi.py",
+    "config/wsgi.py",
+]
+
+[tool.mypy]
+plugins = ["mypy_django_plugin.main"]
+mypy_path = "src"
+files = "src"
+strict = true
+disallow_untyped_defs = true
+exclude = [
+    "src/manage\\.py",
+    "src/*/migrations/*\\.py",
+    "src/config/settings/*\\.py",
+    "src/config/asgi\\.py",
+    "src/config/wsgi\\.py",
+]
+
+[tool.django-stubs]
+django_settings_module = "config.settings"
+
+[[tool.mypy.overrides]]
+module = ["factory", "factory.*", "debug_toolbar.*", "pyroscope"]
+ignore_missing_imports = true

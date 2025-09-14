@@ -1,0 +1,30 @@
+### MAC ###
+.DS_Store
+
+# Environment
+venv/
+.venv
+.env
+.local
+.python-version
+
+# Testing
+.coverage
+coverage.xml
+allure-report/
+.pytest_cache/
+.mypy_cache/
+
+# Compiled source
+*.pyc
+__pycache__/
+*.egg-info/
+wheels/
+.installed.cfg
+*.egg
+eggs/
+.eggs/
+
+# Data
+db.sqlite3
+*.log
