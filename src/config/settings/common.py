@@ -14,6 +14,10 @@ import os
 import sys
 from pathlib import Path
 
+# ------------------------------------------------------------------------------------------------
+# DEPLOYMENT SETTINGS
+# ------------------------------------------------------------------------------------------------
+
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "development")
 DEBUG = os.getenv("DEBUG") == "True"
 TESTING = "test" in sys.argv
@@ -21,36 +25,84 @@ TESTING = "test" in sys.argv
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+PROJECT_ID = os.environ.get("PROJECT_ID", "django_slices_starter")
+PROJECT_NAME = os.environ.get("PROJECT_NAME", "Django Slices Starter")
+PROJECT_DOMAIN = os.environ.get("PROJECT_DOMAIN", "localhost:8000")
+PROJECT_SCHEME = os.environ.get("PROJECT_SCHEME", "http")
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
+# ------------------------------------------------------------------------------------------------
+# SECURITY SETTINGS
+# ------------------------------------------------------------------------------------------------
 
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ["SECURITY_SECRET_KEY"]
 
 ALLOWED_HOSTS = os.environ.get("SECURITY_ALLOWED_HOSTS", "").split(",")
 
-
-# Application definition
+# ------------------------------------------------------------------------------------------------
+# INSTALLED APPS SETTINGS
+# ------------------------------------------------------------------------------------------------
 
 INSTALLED_APPS = [
-    "django.contrib.admin",
+    # -------------------------------------------------
+    # Django apps
+    # -------------------------------------------------
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
+    # "django.contrib.messages", - Messages framework is not used
+    # "django.contrib.staticfiles",  - Static files are not used
+    # -------------------------------------------------
+    # 3rd party apps
+    # -------------------------------------------------
+    "django_typer",
+    # -------------------------------------------------
+    # Allauth apps
+    # -------------------------------------------------
+    "allauth",
+    "allauth.account",
+    # "allauth.socialaccount",  # if using social auth
+    "allauth.headless",  # if using backend as api only
+    # "allauth.mfa",  # if using multi-factor authentication
+    # -------------------------------------------------
+    # Library apps
+    # -------------------------------------------------
+    "lib.slices",
+    # -------------------------------------------------
+    # Project apps
+    # -------------------------------------------------
+    "core",
 ]
 
+# ------------------------------------------------------------------------------------------------
+# MIDDLEWARE SETTINGS
+# ------------------------------------------------------------------------------------------------
+
 MIDDLEWARE = [
+    # -------------------------------------------------
+    # Initial middleware
+    # -------------------------------------------------
+    # -------------------------------------------------
+    # Django middleware
+    # -------------------------------------------------
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # -------------------------------------------------
+    # Third party middleware
+    # -------------------------------------------------
+    "allauth.account.middleware.AccountMiddleware",
+    # -------------------------------------------------
+    # Final middleware
+    # -------------------------------------------------
+    "lib.monitoring.middleware.TelemetryMiddleware",
 ]
+
+# ------------------------------------------------------------------------------------------------
+# WEB SERVER / ROUTER SETTINGS
+# ------------------------------------------------------------------------------------------------
 
 ROOT_URLCONF = "config.urls"
 
@@ -73,16 +125,18 @@ WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
 
-# Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
+# ------------------------------------------------------------------------------------------------
+# AUTHENTICATION SETTINGS
+# ------------------------------------------------------------------------------------------------
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    },
-}
+AUTHENTICATION_BACKENDS = [
+    # Needed to login by username in Django admin, regardless of `allauth`
+    "django.contrib.auth.backends.ModelBackend",  # Change this to custom backend
+    # `allauth` specific authentication methods, such as login by email
+    "allauth.account.auth_backends.AuthenticationBackend",
+]
 
+AUTH_USER_MODEL = "core.User"
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -102,9 +156,37 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+HEADLESS_ONLY = True
+
+# ------------------------------------------------------------------------------------------------
+# DATABASE SETTINGS
+# ------------------------------------------------------------------------------------------------
+
+# Database
+# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
+
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.environ["DB_NAME"],
+        "USER": os.environ["DB_USER"],
+        "PASSWORD": os.environ["DB_PASSWORD"],
+        "HOST": os.environ["DB_HOST"],
+        "PORT": os.environ["DB_PORT"],
+    },
+}
+
+# Default primary key field type
+# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# ------------------------------------------------------------------------------------------------
+# I18N, L10N, T9N SETTINGSs
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
+# ------------------------------------------------------------------------------------------------
 
 LANGUAGE_CODE = "en-us"
 
@@ -114,13 +196,30 @@ USE_I18N = True
 
 USE_TZ = True
 
+LANGUAGES = [
+    ("en", "English"),
+    ("fr", "French"),
+    ("ar", "Arabic"),
+    # add others as needed
+]
+
+LOCALE_PATHS = [
+    str(Path(BASE_DIR) / "locale"),
+]
+
+# ------------------------------------------------------------------------------------------------
+# STATIC / MEDIA SETTINGS
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
+# ------------------------------------------------------------------------------------------------
 
-STATIC_URL = "static/"
+# STATIC_URL = "static/" - Has been disabled since static files are not used
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
+MEDIA_URL = "media/"
 
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+# ------------------------------------------------------------------------------------------------
+# CUSTOM PROJECT SETTINGS
+# ------------------------------------------------------------------------------------------------
+
+PAGINATION_MAX_LIMIT = int(os.getenv("PAGINATION_MAX_LIMIT", "100"))

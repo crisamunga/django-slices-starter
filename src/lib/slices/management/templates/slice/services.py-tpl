@@ -1,0 +1,54 @@
+from uuid import UUID
+
+from django.db.models import QuerySet
+
+from core.models import User
+from lib.errors import not_found_on_error
+
+from . import permissions
+from .models import {{ camel_case_app_name }}
+
+
+async def list_{{ app_name }}s(
+    *,
+    auth_user: User,
+    search: str | None = None,
+    sort: str | None = None,
+    uuids: list[UUID] | None = None,
+) -> QuerySet[{{ camel_case_app_name }}]:
+    await permissions.can_browse_{{ app_name }}s(auth_user=auth_user)
+    queryset = {{ camel_case_app_name }}.objects.all()
+    if uuids:
+        queryset = queryset.filter(uuid__in=uuids)
+    if search:
+        queryset = queryset.filter(uuid__icontains=search)
+    if sort and sort in ["uuid", "-uuid"]:
+        queryset = queryset.order_by(sort)
+    return queryset
+
+
+async def get_{{ app_name }}(*, {{ app_name }}_uuid: UUID, auth_user: User) -> {{ camel_case_app_name }}:
+    with not_found_on_error("{{ camel_case_app_name }}"):
+        {{ app_name }} = await {{ camel_case_app_name }}.objects.aget(uuid={{ app_name }}_uuid)
+    await permissions.can_read_{{ app_name }}(auth_user=auth_user, {{ app_name }}={{ app_name }})
+    return {{ app_name }}
+
+
+async def add_{{ app_name }}(*, auth_user: User) -> {{ camel_case_app_name }}:
+    await permissions.can_add_{{ app_name }}(auth_user=auth_user)
+    return await {{ camel_case_app_name }}.objects.acreate()
+
+
+async def update_{{ app_name }}(*, {{ app_name }}_uuid: UUID, auth_user: User) -> {{ camel_case_app_name }}:
+    with not_found_on_error("{{ camel_case_app_name }}"):
+        {{ app_name }} = await {{ camel_case_app_name }}.objects.aget(uuid={{ app_name }}_uuid)
+    await permissions.can_edit_{{ app_name }}(auth_user=auth_user, {{ app_name }}={{ app_name }})
+    await {{ app_name }}.asave()
+    return {{ app_name }}
+
+
+async def delete_{{ app_name }}(*, {{ app_name }}_uuid: UUID, auth_user: User) -> None:
+    with not_found_on_error("{{ camel_case_app_name }}"):
+        {{ app_name }} = await {{ camel_case_app_name }}.objects.aget(uuid={{ app_name }}_uuid)
+    await permissions.can_delete_{{ app_name }}(auth_user=auth_user, {{ app_name }}={{ app_name }})
+    await {{ app_name }}.adelete()

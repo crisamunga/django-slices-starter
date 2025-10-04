@@ -1,0 +1,15 @@
+from lib.models import BaseModel
+
+# Create your models here.
+
+class {{ camel_case_app_name }}(BaseModel):
+    """
+    {{ camel_case_app_name }} model.
+    """
+    class Meta:
+        db_table = "{{ app_name }}"
+        verbose_name = "{{ camel_case_app_name }}"
+        verbose_name_plural = "{{ camel_case_app_name }}s"
+        ordering = ("-created_at",)
+
+__all__ = ["{{ camel_case_app_name }}"]

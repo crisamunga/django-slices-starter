@@ -1,0 +1,143 @@
+from typing import TYPE_CHECKING
+from uuid import UUID
+
+from django.urls import reverse
+from ninja import Field, Path, Query, Router, Schema
+from ninja.pagination import paginate
+
+from lib.logs import log_error
+from lib.rest import BaseInput, BaseObjectResource, CursorPagination, response, UUIDList
+from lib.types import AuthenticatedRequest
+from lib.validation import ModelShouldNotExist, ValidationRule, validate
+
+from . import models, services
+
+if TYPE_CHECKING:
+    from django.db.models import QuerySet
+
+
+# ------------------------------------------------------------------------------
+# Resources
+# ------------------------------------------------------------------------------
+
+
+class {{ camel_case_app_name }}(BaseObjectResource):
+    link: str = Field(..., description="The link to the {{ app_name }}.")
+
+    @staticmethod
+    def resolve_link(obj: models.{{ camel_case_app_name }}) -> str:
+        return reverse("api:read-{{ app_name }}", kwargs={"{{ app_name }}_uuid": obj.uuid})
+
+
+router = Router()
+
+# ------------------------------------------------------------------------------
+# Root path: "{{ app_name }}s/"
+# ------------------------------------------------------------------------------
+
+
+class RootQuery(Schema):
+    search: str | None = Field(None, description="Search {{ app_name }}s by name.")
+    sort: str | None = Field(None, description="Order {{ app_name }}s by the provided field. Options are name.")
+    uuids: UUIDList | None = Field(None, description="List of {{ app_name }} UUIDs to filter by")
+
+@router.get(
+    path="{{ app_name }}s/",
+    response=response(200, list[{{ camel_case_app_name }}]),
+    url_name="browse-{{ app_name }}s",
+    operation_id="browse-{{ app_name }}s",
+    summary="{{ camel_case_app_name }}s | Browse",
+    tags=["Admin", "User"],
+)
+@paginate(CursorPagination[models.{{ camel_case_app_name }}])
+@log_error()
+async def browse(request: AuthenticatedRequest, query: Query[RootQuery]) -> "QuerySet[models.{{ camel_case_app_name }}]":
+    return await services.list_{{ app_name }}s(
+        auth_user=request.user,
+        uuids=query.uuids,
+        search=query.search,
+        sort=query.sort,
+    )
+
+
+class Add{{ camel_case_app_name }}(BaseInput):
+    ...
+
+    @property
+    def validators(self) -> dict[str, tuple[ValidationRule, ...]]:
+        return {}
+
+
+@router.post(
+    path="{{ app_name }}s/",
+    response=response(201, {{ camel_case_app_name }}),
+    url_name="add-{{ app_name }}",
+    operation_id="add-{{ app_name }}",
+    summary="{{ camel_case_app_name }}s | Add",
+    tags=["Admin"],
+)
+@log_error()
+async def add(request: AuthenticatedRequest, data: Add{{ camel_case_app_name }}) -> tuple[int, models.{{ camel_case_app_name }}]:
+    await validate(data, auth_user=request.user, base_path=["body", "data"])
+    {{ app_name }} = await services.add_{{ app_name }}(auth_user=request.user)
+    return 201, {{ app_name }}
+
+
+# ------------------------------------------------------------------------------
+# Single path: "{{ app_name }}s/{{"{"}}{{ app_name }}_uuid{{"}"}}/"
+# ------------------------------------------------------------------------------
+
+
+class SinglePath(Schema):
+    {{ app_name }}_uuid: UUID = Field(..., description="The UUID of the {{ app_name }}.")
+
+
+@router.get(
+    path="{{ app_name }}s/{{"{"}}{{ app_name }}_uuid{{"}"}}/",
+    response=response(200, {{ camel_case_app_name }}),
+    url_name="read-{{ app_name }}",
+    operation_id="read-{{ app_name }}",
+    summary="{{ camel_case_app_name }}s | Read",
+    tags=["Admin", "User"],
+)
+@log_error()
+async def read(request: AuthenticatedRequest, path: Path[SinglePath]) -> tuple[int, models.{{ camel_case_app_name }}]:
+    {{ app_name }} = await services.get_{{ app_name }}(auth_user=request.user, {{ app_name }}_uuid=path.{{ app_name }}_uuid)
+    return 200, {{ app_name }}
+
+
+class Edit{{ camel_case_app_name }}(BaseInput):
+    @property
+    def validators(self) -> dict[str, tuple[ValidationRule, ...]]:
+        return {}
+
+
+@router.patch(
+    "{{ app_name }}s/{{"{"}}{{ app_name }}_uuid{{"}"}}/",
+    response=response(200, {{ camel_case_app_name }}),
+    url_name="edit-{{ app_name }}",
+    operation_id="edit-{{ app_name }}",
+    summary="{{ camel_case_app_name }}s | Edit",
+    tags=["Admin"],
+)
+@log_error()
+async def edit(request: AuthenticatedRequest, path: Path[SinglePath], data: Edit{{ camel_case_app_name }}) -> tuple[int, models.{{ camel_case_app_name }}]:
+    await validate(data, auth_user=request.user, base_path=["body", "data"])
+    {{ app_name }} = await services.update_{{ app_name }}(
+        auth_user=request.user, {{ app_name }}_uuid=path.{{ app_name }}_uuid
+    )
+    return 200, {{ app_name }}
+
+
+@router.delete(
+    path="{{ app_name }}s/{{"{"}}{{ app_name }}_uuid{{"}"}}/",
+    response=response(204),
+    url_name="delete-{{ app_name }}",
+    operation_id="delete-{{ app_name }}",
+    summary="{{ camel_case_app_name }}s | Delete",
+    tags=["Admin"],
+)
+@log_error()
+async def delete(request: AuthenticatedRequest, path: Path[SinglePath]) -> tuple[int, None]:
+    await services.delete_{{ app_name }}(auth_user=request.user, {{ app_name }}_uuid=path.{{ app_name }}_uuid)
+    return 204, None

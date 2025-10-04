@@ -9,13 +9,16 @@ license = { file = "LICENSE" }
 dependencies = [
     "daphne>=4.2.1",
     "django>=5.2.6",
+    "django-allauth[socialaccount]>=65.11.2",
     "django-debug-toolbar>=6.0.0",
     "django-ninja>=1.4.3",
+    "django-typer[rich]>=3.3.2",
     "httpx>=0.28.1",
     "opentelemetry-exporter-otlp>=1.37.0",
     "opentelemetry-instrumentation-django>=0.58b0",
     "opentelemetry-instrumentation-httpx>=0.58b0",
     "opentelemetry-instrumentation-psycopg>=0.58b0",
+    "opentelemetry-instrumentation-requests>=0.58b0",
     "psycopg[binary]>=3.2.10",
     "pydantic[email]>=2.11.9",
     "python-dotenv>=1.1.1",
@@ -28,6 +31,7 @@ dependencies = [
 dev = [
     "coverage>=7.10.6",
     "detect-secrets>=1.5.0",
+    "django-debug-toolbar>=6.0.0",
     "django-stubs[compatible-mypy]>=5.2.5",
     "factory-boy>=3.3.3",
     "faker>=37.6.0",
@@ -55,6 +59,14 @@ ignore = [
     "D", # Docstrings are not required
     "EM", # Allow use of string arguments to exception calls
     "TRY", # Allow use of bare except: clauses
+    "ANN401", # Allow using Any for args and kwargs
+    "COM812", # Clashes with the formatter for trailing commas
+    "ARG002", # Allow unused function arguments. There are cases where spec compliance is necessary
+    "ARG003", # Allow unused class method arguments. There are cases where spec compliance is necessary
+    "PERF", # Negligible performance impact with potentially significant readability loss
+    "TD", # Less strict enforcement of TODO comment formatting
+    "FIX", # Allow use of fixme / todo / hack comments for documentation purposes
+    "FBT", # Allow boolean arguments, there are many cases where they are appropriate
 ]
 
 [tool.ruff.lint.extend-per-file-ignores]
@@ -72,7 +84,9 @@ ignore = [
 ]
 "**/test*.py" = [
     "S101", # Allow use of assert statements in test files
-    "PLR2004" # Allow magic values in comparisons
+    "PLR2004", # Allow magic values in comparisons
+    "TID252", # Allow relative imports in test files
+    "DTZ005", # Allow use of datetime.now() with no tz in test files. To avoid initializing Django in parameterized tests
 ]
 "**/conftest.py" = [
     "S101", # Allow use of assert statements in test files
@@ -80,7 +94,9 @@ ignore = [
 ]
 "**/tests/*" = [
     "S101", # Allow use of assert statements in test files
-    "PLR2004" # Allow magic values in comparisons
+    "PLR2004", # Allow magic values in comparisons
+    "TID252", # Allow relative imports in test files
+    "DTZ005", # Allow use of datetime.now() with no tz in test files. To avoid initializing Django in parameterized tests
 ]
 
 [tool.ruff.lint.pylint]

@@ -1,0 +1,201 @@
+from typing import Annotated, Any
+from uuid import UUID
+import contextlib
+
+import strawberry
+
+import core.models
+from lib.graphql import Base, DataLoader, Info, make_schema, mutations, relay
+from lib.logs import log_error
+
+from . import services
+
+# ------------------------------------------------------------------------------
+# Types
+# ------------------------------------------------------------------------------
+
+
+@strawberry.federation.type(keys=["uuid", "id"], description="{{ camel_case_app_name }}")
+class {{ camel_case_app_name }}(Base, relay.Node):
+
+    @classmethod
+    def is_type_of(cls, obj: Any, info: Any) -> bool:
+        return isinstance(obj, core.models.{{ camel_case_app_name }})
+
+    @classmethod
+    @log_error()
+    def resolve_node(cls, node_id: str, *, info: Info, required: bool) -> Any:
+        loader = info.get_loader({{ camel_case_app_name }}Loader)
+        return loader.load(
+            {{ camel_case_app_name }}Loader.Key(
+                {{ app_name }}_uuid=UUID(node_id),
+                auth_user=info.user,
+            )
+        )
+
+    @classmethod
+    def resolve_reference(cls, info: Info, id: str | None = None, uuid: str | None = None) -> Any:  # noqa: A002
+        loader = info.get_loader({{ camel_case_app_name }}Loader)
+        if uuid:
+            return loader.load({{ camel_case_app_name }}Loader.Key(
+                {{ app_name }}_uuid=UUID(uuid),
+                auth_user=info.user,
+            ))
+        elif id:
+            global_id = relay.GlobalID.from_id(id)
+            if global_id.type_name == "{{ camel_case_app_name }}":
+                return loader.load(
+                    {{ camel_case_app_name }}Loader.Key(
+                        {{ app_name }}_uuid=UUID(global_id.node_id),
+                        auth_user=info.user,
+                    )
+                )
+        return None
+
+# ------------------------------------------------------------------------------
+# Queries
+# ------------------------------------------------------------------------------
+
+
+@strawberry.input
+class {{ camel_case_app_name }}Filter:
+    uuids: Annotated[list[UUID] | None, strawberry.argument(description="The UUIDs of the {{ app_name }}s to filter by.")] = None
+
+
+@strawberry.type
+class Query:
+    @strawberry.field(graphql_type={{ camel_case_app_name }}, description="Get a single {{ app_name }}")  # type: ignore # Untyped decorator from strawberry
+    @log_error()
+    async def {{ app_name }}(
+        self,
+        info: Info,
+        {{ app_name }}_uuid: Annotated[UUID, strawberry.argument(description="The UUID of the {{ app_name }}.")],
+    ) -> Any:
+        return await services.get_{{ app_name }}(auth_user=info.user, {{ app_name }}_uuid={{ app_name }}_uuid)
+
+    @relay.connection({{ camel_case_app_name }}, description="List {{ app_name }}s")  # type: ignore # Untyped decorator from strawberry
+    @log_error()
+    async def {{ app_name }}s(
+        self,
+        info: Info,
+        search: Annotated[str | None, strawberry.argument(description="Search for {{ app_name }}s by name.")] = None,
+        sort: Annotated[str | None, strawberry.argument(description="Sort {{ app_name }}s by name.")] = None,
+        filter_: Annotated[
+            {{ camel_case_app_name }}Filter | None, strawberry.argument(description="Filter {{ app_name }}s by certain criteria.", name="filter")
+        ] = None,
+    ) -> Any:
+        uuids = filter_.uuids if filter_ else None
+        return await services.list_{{ app_name }}s(auth_user=info.user, search=search, sort=sort, uuids=uuids)
+
+
+# ------------------------------------------------------------------------------
+# Mutations
+# ------------------------------------------------------------------------------
+
+
+@strawberry.federation.type(tags=["Admin"])
+class Add{{ camel_case_app_name }}Payload(mutations.Payload[{{ camel_case_app_name }}]): ...
+
+
+@strawberry.federation.type(tags=["Admin"])
+class Edit{{ camel_case_app_name }}Payload(mutations.Payload[{{ camel_case_app_name }}]): ...
+
+
+@strawberry.federation.type(tags=["Admin"])
+class Delete{{ camel_case_app_name }}Payload(mutations.Payload[bool]): ...
+
+
+@strawberry.type
+class Mutation:
+    @strawberry.federation.mutation(
+        description="Add a {{ app_name }}",
+        extensions=[mutations.ValidatedInputMutationExtension()],
+        graphql_type=Add{{ camel_case_app_name }}Payload,
+        tags=["Admin"],
+    )  # type: ignore # Untyped decorator from strawberry
+    @log_error()
+    async def add_{{ app_name }}(
+        self,
+        info: Info,
+    ) -> Any:
+        return await services.add_{{ app_name }}(
+            auth_user=info.user,
+        )
+
+    @strawberry.federation.mutation(
+        description="Edit a {{ app_name }}",
+        extensions=[mutations.ValidatedInputMutationExtension()],
+        graphql_type=Edit{{ camel_case_app_name }}Payload,
+        tags=["Admin"],
+    )  # type: ignore # Untyped decorator from strawberry
+    @log_error()
+    async def edit_{{ app_name }}(
+        self,
+        info: Info,
+        {{ app_name }}_uuid: Annotated[UUID, strawberry.argument(description="The UUID of the {{ app_name }}.")],
+    ) -> Any:
+        return await services.update_{{ app_name }}(
+            auth_user=info.user,
+            {{ app_name }}_uuid={{ app_name }}_uuid,
+        )
+
+    @strawberry.federation.mutation(
+        description="Delete a {{ app_name }}",
+        extensions=[mutations.ValidatedInputMutationExtension()],
+        graphql_type=Delete{{ camel_case_app_name }}Payload,
+        tags=["Admin"],
+    )  # type: ignore # Untyped decorator from strawberry
+    @log_error()
+    async def delete_{{ app_name }}(
+        self,
+        info: Info,
+        {{ app_name }}_uuid: Annotated[UUID, strawberry.argument(description="The UUID of the {{ app_name }}.")],
+    ) -> Any:
+        await services.delete_{{ app_name }}(
+            auth_user=info.user,
+            {{ app_name }}_uuid={{ app_name }}_uuid,
+        )
+        return True
+
+
+# ------------------------------------------------------------------------------
+# Data loader
+# ------------------------------------------------------------------------------
+
+class {{ camel_case_app_name }}Loader(DataLoader["{{ camel_case_app_name }}Loader.Key", "core.models.{{ camel_case_app_name }} | None"]):
+    class Key:
+        def __init__(self, {{ app_name }}_uuid: UUID, auth_user: core.models.User) -> None:
+            self.{{ app_name }}_uuid = {{ app_name }}_uuid
+            self.auth_user = auth_user
+
+    async def execute(self, keys: list[Key]) -> list[core.models.{{ camel_case_app_name }} | None | Exception]:
+        uuids = []
+        auth_user = keys[0].auth_user  # Assuming all keys have the same auth_user since loader is called per request
+        for k in keys:
+            uuids.append(k.{{ app_name }}_uuid)
+
+        # Load {{ app_name }}s from the database or any other source
+        {{ app_name }}s = await services.list_{{ app_name }}s(uuids=uuids, auth_user=auth_user)
+        {{ app_name }}_map = await {{ app_name }}s.ain_bulk(uuids, field_name="uuid")
+        {{ app_name }}_list: list[core.models.{{ camel_case_app_name }} | None | Exception] = []
+        for key in keys:
+            {{ app_name }} = {{ app_name }}_map.get(key.{{ app_name }}_uuid)
+            if {{ app_name }} is None:
+                {{ app_name }}_list.append(None)
+            else:
+                {{ app_name }}_list.append({{ app_name }})
+
+        return {{ app_name }}_list
+
+
+# ------------------------------------------------------------------------------
+# Schema
+# ------------------------------------------------------------------------------
+
+types = [{{ camel_case_app_name }}]
+
+schema = make_schema(
+    query=Query,
+    mutation=Mutation,
+    types=types,
+)

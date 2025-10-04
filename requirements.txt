@@ -8,6 +8,7 @@ asgiref==3.9.1
     # via
     #   daphne
     #   django
+    #   django-allauth
 attrs==25.3.0
     # via
     #   service-identity
@@ -25,23 +26,36 @@ cffi==2.0.0 ; platform_python_implementation != 'PyPy'
     # via cryptography
 charset-normalizer==3.4.3
     # via requests
+click==8.3.0
+    # via
+    #   django-typer
+    #   typer-slim
+colorama==0.4.6 ; sys_platform == 'win32'
+    # via click
 constantly==23.10.4
     # via twisted
 cryptography==45.0.7
     # via
     #   autobahn
+    #   pyjwt
     #   pyopenssl
     #   service-identity
 daphne==4.2.1
     # via django-slices-starter
 django==5.2.6
     # via
+    #   django-allauth
     #   django-debug-toolbar
     #   django-ninja
     #   django-slices-starter
+    #   django-typer
+django-allauth==65.11.2
+    # via django-slices-starter
 django-debug-toolbar==6.0.0
     # via django-slices-starter
 django-ninja==1.4.3
+    # via django-slices-starter
+django-typer==3.3.2
     # via django-slices-starter
 dnspython==2.8.0
     # via email-validator
@@ -79,6 +93,12 @@ incremental==24.7.2
     # via twisted
 lia-web==0.2.3
     # via strawberry-graphql
+markdown-it-py==4.0.0
+    # via rich
+mdurl==0.1.2
+    # via markdown-it-py
+oauthlib==3.3.1
+    # via django-allauth
 opentelemetry-api==1.37.0
     # via
     #   opentelemetry-exporter-otlp-proto-grpc
@@ -88,6 +108,7 @@ opentelemetry-api==1.37.0
     #   opentelemetry-instrumentation-django
     #   opentelemetry-instrumentation-httpx
     #   opentelemetry-instrumentation-psycopg
+    #   opentelemetry-instrumentation-requests
     #   opentelemetry-instrumentation-wsgi
     #   opentelemetry-sdk
     #   opentelemetry-semantic-conventions
@@ -108,6 +129,7 @@ opentelemetry-instrumentation==0.58b0
     #   opentelemetry-instrumentation-django
     #   opentelemetry-instrumentation-httpx
     #   opentelemetry-instrumentation-psycopg
+    #   opentelemetry-instrumentation-requests
     #   opentelemetry-instrumentation-wsgi
 opentelemetry-instrumentation-dbapi==0.58b0
     # via opentelemetry-instrumentation-psycopg
@@ -116,6 +138,8 @@ opentelemetry-instrumentation-django==0.58b0
 opentelemetry-instrumentation-httpx==0.58b0
     # via django-slices-starter
 opentelemetry-instrumentation-psycopg==0.58b0
+    # via django-slices-starter
+opentelemetry-instrumentation-requests==0.58b0
     # via django-slices-starter
 opentelemetry-instrumentation-wsgi==0.58b0
     # via opentelemetry-instrumentation-django
@@ -135,12 +159,14 @@ opentelemetry-semantic-conventions==0.58b0
     #   opentelemetry-instrumentation-dbapi
     #   opentelemetry-instrumentation-django
     #   opentelemetry-instrumentation-httpx
+    #   opentelemetry-instrumentation-requests
     #   opentelemetry-instrumentation-wsgi
     #   opentelemetry-sdk
 opentelemetry-util-http==0.58b0
     # via
     #   opentelemetry-instrumentation-django
     #   opentelemetry-instrumentation-httpx
+    #   opentelemetry-instrumentation-requests
     #   opentelemetry-instrumentation-wsgi
 packaging==25.0
     # via
@@ -168,6 +194,10 @@ pydantic==2.11.9
     #   django-slices-starter
 pydantic-core==2.33.2
     # via pydantic
+pygments==2.19.2
+    # via rich
+pyjwt==2.10.1
+    # via django-allauth
 pyopenssl==25.1.0
     # via twisted
 python-dateutil==2.9.0.post0
@@ -177,9 +207,13 @@ python-dotenv==1.1.1
 redis==6.4.0
     # via django-slices-starter
 requests==2.32.5
-    # via opentelemetry-exporter-otlp-proto-http
+    # via
+    #   django-allauth
+    #   opentelemetry-exporter-otlp-proto-http
 restate-sdk==0.9.1
     # via django-slices-starter
+rich==14.1.0
+    # via django-typer
 service-identity==24.2.0
     # via twisted
 setuptools==80.9.0
@@ -187,6 +221,8 @@ setuptools==80.9.0
     #   autobahn
     #   incremental
     #   zope-interface
+shellingham==1.5.4
+    # via django-typer
 six==1.17.0
     # via python-dateutil
 sniffio==1.3.1
@@ -201,6 +237,8 @@ twisted==25.5.0
     # via daphne
 txaio==25.6.1
     # via autobahn
+typer-slim==0.19.2
+    # via django-typer
 typing-extensions==4.15.0
     # via
     #   lia-web
@@ -214,6 +252,7 @@ typing-extensions==4.15.0
     #   restate-sdk
     #   strawberry-graphql
     #   twisted
+    #   typer-slim
     #   typing-inspection
 typing-inspection==0.4.1
     # via pydantic

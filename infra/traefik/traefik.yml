@@ -1,0 +1,14 @@
+api:
+  insecure: true
+entryPoints:
+  web:
+    address: ":80"
+providers:
+  docker: {}
+ping: {}
+log:
+  format: json
+  level: INFO
+accessLog:
+  # JSON format
+  format: json

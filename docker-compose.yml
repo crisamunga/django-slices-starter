@@ -1,0 +1,176 @@
+name: django-slices
+
+services:
+  db:
+    image: postgres:17-alpine
+    volumes:
+      - db_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - 5432:5432 # Use this to connect to Postgres from your host machine
+    networks:
+      - app_network
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${DB_USER}", "-d", "${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    labels:
+      - "traefik.enable=false"
+
+  cache:
+    image: valkey/valkey:latest
+    ports:
+      - 6379:6379 # Use this to read / write data to valkey
+    volumes:
+      - cache_data:/data
+    networks:
+      - app_network
+    healthcheck:
+      test: ['CMD', 'valkey-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    labels:
+      - "traefik.enable=false"
+
+  restate:
+    image: docker.restate.dev/restatedev/restate:latest
+    expose:
+      - 8080 # Use this to call downstream restate services
+      - 9070 # use this to access the restate UI & Register services
+      - 9071 # Use this to browse restate's internal RocksDB using the Postgres protocol
+    networks:
+      - app_network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:9070/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    labels:
+      - "traefik.enable=true"
+
+      # Main ingress route for restate
+      - "traefik.http.routers.restate-api.rule=Host(`api.restate.localhost`)"
+      - "traefik.http.routers.restate-api.service=restate-api"
+      - "traefik.http.services.restate-api.loadbalancer.server.url=http://restate:8080"
+
+      # Registry route for restate
+      - "traefik.http.routers.restate-registry.rule=Host(`registry.restate.localhost`)"
+      - "traefik.http.routers.restate-registry.service=restate-registry"
+      - "traefik.http.services.restate-registry.loadbalancer.server.url=http://restate:9070"
+
+      # DB route for restate
+      - "traefik.http.routers.restate-db.rule=Host(`db.restate.localhost`)"
+      - "traefik.http.routers.restate-db.service=restate-db"
+      - "traefik.http.services.restate-db.loadbalancer.server.url=http://restate:9071"
+
+
+  mailpit:
+    image: axllent/mailpit:latest
+    expose:
+      - 8025 # Use this to view the Mailpit web interface
+    ports:
+      - 1025:1025 # Use this to send emails to mailpit
+    networks:
+      - app_network
+    volumes:
+      - ./infra/mailpit:/etc/config/mailpit
+    environment:
+      MP_MAX_MESSAGES: 5000
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+      MP_SMTP_TLS_CERT: /etc/config/mailpit/cert.pem
+      MP_SMTP_TLS_KEY: /etc/config/mailpit/key.pem
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:8025/readyz"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    profiles:
+      - dev
+    labels:
+      - "traefik.enable=true"
+      # Main ingress route for mailpit
+      - "traefik.http.routers.mailpit.rule=Host(`mailpit.localhost`)"
+      - "traefik.http.routers.mailpit.service=mailpit"
+      - "traefik.http.services.mailpit.loadbalancer.server.url=http://mailpit:8025"
+
+  minio:
+    image: minio/minio:latest
+    command:
+      - "server"
+      - "/data"
+      - "--console-address"
+      - "\":9001\""
+    ports:
+      - 9000:9000
+      - 9001:9001
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    expose:
+      - 9000 # Use this to access the minio S3 API
+      - 9001 # Use this to access the minio web console
+    volumes:
+      - minio_data:/data
+    networks:
+      - app_network
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    profiles:
+      - dev
+    labels:
+      - "traefik.enable=true"
+      # Main S3 API route for minio
+      - "traefik.http.routers.minio.rule=Host(`s3.minio.localhost`)"
+      - "traefik.http.routers.minio.service=minio-s3"
+      - "traefik.http.services.minio-s3.loadbalancer.server.url=http://minio:9001"
+      # Web console route for minio
+      - "traefik.http.routers.minio-console.rule=Host(`console.minio.localhost`)"
+      - "traefik.http.routers.minio-console.service=minio-console"
+      - "traefik.http.services.minio-console.loadbalancer.server.url=http://minio:9001"
+
+  traefik:
+    image: traefik:v3.5
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    networks:
+      - app_network
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:8080/ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    volumes:
+      - ./infra/traefik/traefik.yml:/etc/traefik/traefik.yml
+      - /var/run/docker.sock:/var/run/docker.sock
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+networks:
+  app_network:
+    name: app_network
+
+volumes:
+  db_data:
+  cache_data:
+  mp_data:
+  minio_data:
