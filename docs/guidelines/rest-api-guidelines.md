@@ -1,5 +1,3 @@
-Apply the [python coding guidelines](./python.instructions.md) to all code.
-
 # Guidelines for authoring rest apis
 
 - This project uses [Django Ninja](https://django-ninja.rest-framework.com/) for building REST APIs. Follow its conventions and best practices.

@@ -1,6 +1,4 @@
-Apply the [python coding guidelines](./python.instructions.md) to all code
-
-# Slice Instructions
+# Slice Guidelines
 
 - This project is organized into slices. Each slice is a self-contained package with its own models, REST API, GraphQL API, etc.
 - Each slice should have its own subpackage within the `core` package.

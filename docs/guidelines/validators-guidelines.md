@@ -1,6 +1,4 @@
-Apply the [python coding guidelines](./python.instructions.md) to all code.
-
-# Validators Instructions
+# Validators Guidelines
 
 - Place custom validators in a `validators.py` file within the relevant slice or module.
 - Each validator extends `lib.validation.ValidationRule` and implements the `__call__` method.

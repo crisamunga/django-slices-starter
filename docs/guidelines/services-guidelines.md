@@ -1,6 +1,4 @@
-Apply the [python coding guidelines](./python.instructions.md) to all code.
-
-# Services Instructions
+# Services Guidelines
 
 - Place service layer functions in a `services.py` file within the relevant slice or module.
 - Each service function is defined as an async function.
@@ -8,7 +6,7 @@ Apply the [python coding guidelines](./python.instructions.md) to all code.
 - Service functions should accept parameters necessary to perform the action, including the authenticated user and any relevant data objects.
 - Avoid passing HTTP request or response objects directly to service functions; instead, extract necessary data and pass it as parameters.
 - Http layer constructs that may be needed by the service layer (e.g. `session`) should be passed explicitly as parameters, and should be optional whenever possible.
-- Services should have a corresponding permission function defined in the `permissions.py` file to handle authorization. (see [Permissions Instructions](./permissions.instructions.md))
+- Services should have a corresponding permission function defined in the `permissions.py` file to handle authorization. (see [Permissions Guidelines](./permissions.guidelines.md))
 - Services that list data from the database should return a queryset and leave it up to the caller to evaluate, paginate or slice it.
 - Services that fetch data should include fields for includes, and should use this field to prefetch additional data to reduce database calls.
 - Write unit tests for each service function in the corresponding `tests` package, ensuring coverage of all edge cases.

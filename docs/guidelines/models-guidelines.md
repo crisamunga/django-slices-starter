@@ -1,6 +1,4 @@
-Apply the [python coding guidelines](./python.instructions.md) to all code.
-
-# Models Instructions
+# Models Guidelines
 
 - Place Django models in a `models.py` file within the relevant slice or module.
 - Always explicitly define the `Meta` class within each model and always include these attributes:

@@ -1,6 +1,4 @@
-Apply the [python coding guidelines](./python.instructions.md) to all code.
-
-# Permissions Instructions
+# Permissions s=Guidelines
 
 - Place custom permissions in a `permissions.py` file within the relevant slice or module.
 - Each permission is defined as a function which is decorated with the `lib.permissions.permission` decorator

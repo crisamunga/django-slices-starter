@@ -1,6 +1,4 @@
-Apply the [python coding guidelines](./python.instructions.md) to all code.
-
-# Testing Instructions
+# Testing Guidelines
 
 - Use `pytest` for writing tests.
 - Use `async_to_sync` from `asgiref.sync` to call async functions in tests.
