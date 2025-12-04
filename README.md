@@ -8,6 +8,8 @@ The project uses python 3.13 and above
 
 Dependencies for this project are managed by [uv][uv]
 
+Locally, supporting services can be run using docker and docker compose
+
 ## Setup
 
 Clone the project with git
@@ -55,7 +57,6 @@ set -a; source .env; set +a;
 You can now run the project
 
 ```shell
-cd src/
 ./manage.py runserver
 ```
 
