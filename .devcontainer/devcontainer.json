@@ -1,0 +1,56 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/ubuntu
+{
+  // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+  "name": "Ubuntu",
+
+  // Features to add to the dev container. More info: https://containers.dev/features.
+  "image": "mcr.microsoft.com/devcontainers/base:noble",
+  "features": {
+    // "ghcr.io/devcontainers/features/aws-cli:1": {}, # - Uncomment this line to install the AWS CLI
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "24"
+    }
+  },
+
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  "forwardPorts": [8000],
+
+  // Use 'postCreateCommand' to run commands after the container is created.
+  "postCreateCommand": {
+    "uv": "curl -LsSf https://astral.sh/uv/install.sh | sh"
+  },
+
+  // Configure tool-specific properties.
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "batisteo.vscode-django",
+        "bierner.markdown-mermaid",
+        "charliermarsh.ruff",
+        "eamodio.gitlens",
+        "esbenp.prettier-vscode",
+        "humao.rest-client",
+        "mechatroner.rainbow-csv",
+        "ms-azuretools.vscode-containers",
+        "ms-azuretools.vscode-docker",
+        "ms-ossdata.vscode-pgsql",
+        "ms-python.mypy-type-checker",
+        "ms-python.python",
+        "ms-python.vscode-python-envs",
+        "ms-toolsai.jupyter",
+        "redhat.vscode-xml",
+        "redhat.vscode-yaml",
+        "streetsidesoftware.code-spell-checker",
+        "tamasfe.even-better-toml",
+        "Tyriar.sort-lines",
+        "vscodevim.vim",
+        "yzhang.markdown-all-in-one"
+      ]
+    }
+  }
+
+  // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+  // "remoteUser": "root"
+}

@@ -1,0 +1,57 @@
+{% extends "account/email/base_message.html" %}
+{% load i18n %}
+
+{% block content %}
+
+<div
+  style="
+    font-size: 16px;
+    font-weight: normal;
+    text-align: center;
+    padding: 16px 24px 16px 24px
+  "
+>
+  {% blocktrans with email=email %}
+    You are receiving this email because you, or someone else, tried to access an account with email {{ email }}.
+    However, we do not have any record of such an account in our database
+  {% endblocktrans %}
+</div>
+<div
+  style="
+    font-size: 16px;
+    font-weight: normal;
+    text-align: center;
+    padding: 16px 24px 16px 24px
+  "
+>
+  {% blocktrans with  %}
+    If it was you, you can sign up for an account using the link below
+  {% endblocktrans %}
+</div>
+<div
+  style="
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+    padding: 16px 24px 16px 24px
+  "
+>
+  <a href="{{ signup_url }}">
+    {% blocktrans %} Sign up for an account {% endblocktrans %}
+  </a>
+</div>
+<div
+  style="
+    color: #868686;
+    font-size: 16px;
+    font-weight: normal;
+    text-align: center;
+    padding: 16px 24px 16px 24px;
+  "
+>
+  {% blocktrans %}
+    This mail can be safely ignored if you did not initiate this action
+  {% endblocktrans %}
+</div>
+
+{% endblock content %}

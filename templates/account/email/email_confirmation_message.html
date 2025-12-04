@@ -1,0 +1,42 @@
+{% extends "account/email/base_message.html" %}
+{% load i18n %}
+
+{% block content %}
+
+<div
+  style="
+    font-size: 16px;
+    font-weight: normal;
+    text-align: center;
+    padding: 16px 24px 16px 24px;
+  "
+>
+  {% blocktrans %}Please use the following code to confirm your email address:{%endblocktrans %}
+</div>
+<h1
+  style="
+    font-weight: bold;
+    text-align: center;
+    margin: 0;
+    font-family: 'Nimbus Mono PS', 'Courier New', 'Cutive Mono', monospace;
+    font-size: 32px;
+    padding: 16px 24px 16px 24px;
+  "
+>
+  {{ code }}
+</h1>
+<div
+  style="
+    color: #868686;
+    font-size: 16px;
+    font-weight: normal;
+    text-align: center;
+    padding: 16px 24px 16px 24px;
+  "
+>
+  {% blocktrans with auth_signup_timeout=auth_signup_timeout %}
+    This code will expire in {{ auth_signup_timeout }} minutes.
+  {% endblocktrans %}
+</div>
+
+{% endblock content %}

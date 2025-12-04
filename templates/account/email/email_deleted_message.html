@@ -1,0 +1,29 @@
+{% extends "account/email/base_notification.html" %}
+{% load i18n %}
+
+{% block notification_message %}
+
+<div
+  style="
+    font-size: 16px;
+    font-weight: normal;
+    text-align: center;
+    padding: 16px 24px 16px 24px
+  "
+>
+  {% blocktrans %}
+    The following email address has been removed from your account:
+  {% endblocktrans %}
+</div>
+
+<div
+  style="
+    font-weight: bold;
+    text-align: center;
+    padding: 16px 24px 16px 24px
+  "
+>
+  {{ deleted_email }}
+</div>
+
+{% endblock notification_message %}

@@ -9,7 +9,7 @@ license = { file = "LICENSE" }
 dependencies = [
     "daphne>=4.2.1",
     "django>=5.2.6",
-    "django-allauth[socialaccount]>=65.11.2",
+    "django-allauth[mfa,socialaccount]>=65.11.2",
     "django-debug-toolbar>=6.0.0",
     "django-ninja>=1.4.3",
     "django-typer[rich]>=3.3.2",
@@ -21,6 +21,7 @@ dependencies = [
     "opentelemetry-instrumentation-requests>=0.58b0",
     "psycopg[binary]>=3.2.10",
     "pydantic[email]>=2.11.9",
+    "pyroscope-io>=0.8.11",
     "python-dotenv>=1.1.1",
     "redis>=6.4.0",
     "restate-sdk>=0.9.1",
@@ -35,6 +36,7 @@ dev = [
     "django-stubs[compatible-mypy]>=5.2.5",
     "factory-boy>=3.3.3",
     "faker>=37.6.0",
+    "freezegun>=1.5.5",
     "ipython>=9.5.0",
     "mypy>=1.18.1",
     "pre-commit>=4.3.0",
@@ -71,13 +73,13 @@ ignore = [
 
 [tool.ruff.lint.extend-per-file-ignores]
 ".venv/*" = ["ALL"]  # These are external dependencies
-"src/manage.py" = ["ALL"] # This was written by Django
+"manage.py" = ["ALL"] # This was written by Django
 "__init__.py" = [
     "F401",  # Allow unused imports in __init__.py files
     "F403", # Allow 'from module import *' in __init__.py files
     "F405", # Allow undefined names in __init__.py files
 ]
-"src/config/settings/*.py" = [
+"config/settings/*.py" = [
     "F401",  # Allow unused imports in settings files
     "F403", # Allow 'from module import *' in settings files
     "F405", # Allow undefined names in settings files
@@ -98,14 +100,15 @@ ignore = [
     "TID252", # Allow relative imports in test files
     "DTZ005", # Allow use of datetime.now() with no tz in test files. To avoid initializing Django in parameterized tests
 ]
-
+"**/migrations/**" = [
+    "RUF012", # Allow use of mutable class vars
+]
 [tool.ruff.lint.pylint]
 max-args = 10
 
 [tool.coverage.run]
 command_line = "-m pytest"
 branch = true
-source = ["src"]
 
 [tool.coverage.report]
 exclude_lines = [
@@ -127,21 +130,26 @@ omit = [
 
 [tool.mypy]
 plugins = ["mypy_django_plugin.main"]
-mypy_path = "src"
-files = "src"
+mypy_path = "."
+files = "."
 strict = true
 disallow_untyped_defs = true
 exclude = [
-    "src/manage\\.py",
-    "src/*/migrations/*\\.py",
-    "src/config/settings/*\\.py",
-    "src/config/asgi\\.py",
-    "src/config/wsgi\\.py",
+    "manage\\.py",
+    "./*/migrations/*\\.py",
+    ".venv/*",
+    "config/settings/*\\.py",
+    "config/asgi\\.py",
+    "config/wsgi\\.py",
 ]
 
 [tool.django-stubs]
 django_settings_module = "config.settings"
 
 [[tool.mypy.overrides]]
-module = ["factory", "factory.*", "debug_toolbar.*", "pyroscope"]
+module = ["factory", "factory.*", "debug_toolbar.*", "pyroscope", "allauth.*", "allauth"]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["core.auth.*"] # allauth overrides are missing types
+disallow_subclassing_any = false

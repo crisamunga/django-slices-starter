@@ -1,0 +1,368 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-go/master/schema/compose-spec.json
+
+name: django-slices
+
+services:
+  # -----------------------------------------------------------------------------------------------------------------------
+  # DATA
+  # -----------------------------------------------------------------------------------------------------------------------
+  db:
+    image: postgres:17-alpine
+    volumes:
+      - db_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - 5432:5432 # Use this to connect to Postgres from your host machine
+    networks:
+      - app_network
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${DB_USER}", "-d", "${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    labels:
+      - "traefik.enable=false"
+
+  cache:
+    image: valkey/valkey:latest
+    ports:
+      - 6379:6379 # Use this to read / write data to valkey
+    volumes:
+      - cache_data:/data
+    networks:
+      - app_network
+    healthcheck:
+      test: ['CMD', 'valkey-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    labels:
+      - "traefik.enable=false"
+
+  # -----------------------------------------------------------------------------------------------------------------------
+  # DEV SERVICES
+  # -----------------------------------------------------------------------------------------------------------------------
+
+  restate:
+    image: docker.restate.dev/restatedev/restate:latest
+    expose:
+      - 8080 # Use this to call downstream restate services
+      - 9070 # use this to access the restate UI & Register services
+      - 9071 # Use this to browse restate's internal RocksDB using the Postgres protocol
+    networks:
+      - app_network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:9070/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    labels:
+      - "traefik.enable=true"
+
+      # Main ingress route for restate
+      - "traefik.http.routers.restate-api.rule=Host(`api.restate.localhost`)"
+      - "traefik.http.routers.restate-api.service=restate-api"
+      - "traefik.http.services.restate-api.loadbalancer.server.url=http://restate:8080"
+
+      # Registry route for restate
+      - "traefik.http.routers.restate-registry.rule=Host(`registry.restate.localhost`)"
+      - "traefik.http.routers.restate-registry.service=restate-registry"
+      - "traefik.http.services.restate-registry.loadbalancer.server.url=http://restate:9070"
+
+      # DB route for restate
+      - "traefik.http.routers.restate-db.rule=Host(`db.restate.localhost`)"
+      - "traefik.http.routers.restate-db.service=restate-db"
+      - "traefik.http.services.restate-db.loadbalancer.server.url=http://restate:9071"
+
+
+  mailcrab:
+    image: marlonb/mailcrab:latest
+    expose:
+      - 1080 # Use this to view the Mailcrab web interface
+    ports:
+      - 1025:1025 # Use this to send emails to mailcrab
+    networks:
+      - app_network
+    environment:
+      ENABLE_TLS_AUTH: "false"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:1080/api/version"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    profiles:
+      - dev
+    labels:
+      - "traefik.enable=true"
+      # Main ingress route for mailcrab
+      - "traefik.http.routers.mailcrab.rule=Host(`mailcrab.localhost`)"
+      - "traefik.http.routers.mailcrab.service=mailcrab"
+      - "traefik.http.services.mailcrab.loadbalancer.server.url=http://mailcrab:1080"
+
+  minio:
+    image: minio/minio:latest
+    command:
+      - "server"
+      - "/data"
+      - "--console-address"
+      - ":9001"
+    ports:
+      - 9000:9000
+      - 9001:9001
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    expose:
+      - 9000 # Use this to access the minio S3 API
+      - 9001 # Use this to access the minio web console
+    volumes:
+      - minio_data:/data
+    networks:
+      - app_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    profiles:
+      - dev
+    labels:
+      - "traefik.enable=true"
+      # Main S3 API route for minio
+      - "traefik.http.routers.minio.rule=Host(`s3.minio.localhost`)"
+      - "traefik.http.routers.minio.service=minio-s3"
+      - "traefik.http.services.minio-s3.loadbalancer.server.url=http://minio:9001"
+      # Web console route for minio
+      - "traefik.http.routers.minio-console.rule=Host(`console.minio.localhost`)"
+      - "traefik.http.routers.minio-console.service=minio-console"
+      - "traefik.http.services.minio-console.loadbalancer.server.url=http://minio:9001"
+
+  # -----------------------------------------------------------------------------------------------------------------------
+  # MONITORING
+  # -----------------------------------------------------------------------------------------------------------------------
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./infra/otelcollector/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+      - ./logs:/var/log/app
+    ports:
+      - "4317:4317" # OTLP gRPC
+      - "4318:4318" # OTLP HTTP
+    depends_on:
+      - tempo
+      - loki
+    networks:
+      - app_network
+    profiles:
+      - monitoring
+    labels:
+      # Disabling Traefik for OTEL Collector. Will be accessed by other services directly.
+      - "traefik.enable=false"
+
+  loki:
+    image: grafana/loki:latest
+    volumes:
+      - loki_data:/loki
+    expose:
+      - 3100
+    networks:
+      - app_network
+    profiles:
+      - monitoring
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:3100/ready"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    labels:
+      # Disabling Traefik for Loki. Will be accessed by other services directly.
+      - "traefik.enable=false"
+
+  pyroscope:
+    image: grafana/pyroscope:latest
+    ports:
+      - "4040:4040"
+    networks:
+      - app_network
+    profiles:
+      - monitoring
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:4040/ready"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    labels:
+      # Disabling Traefik for Pyroscope. Will be accessed by other services directly.
+      - "traefik.enable=false"
+
+  tempo-init:
+    image: &tempoImage grafana/tempo:latest
+    user: root
+    entrypoint:
+      - "chown"
+      - "10001:10001"
+      - "/var/tempo"
+    volumes:
+      - ./infra/tempo/tempo-data:/var/tempo
+    networks:
+      - app_network
+    profiles:
+      - monitoring
+    labels:
+      # Disabling Traefik for Tempo-init. Will be accessed by other services directly.
+      - "traefik.enable=false"
+
+  tempo:
+    image: *tempoImage
+    command: [ "-config.file=/etc/tempo.yaml" ]
+    volumes:
+      - ./infra/tempo/tempo.yaml:/etc/tempo.yaml
+      - ./infra/tempo/tempo-data:/var/tempo
+    expose:
+      - 3200 # tempo
+      - 4317 # otlp grpc
+    depends_on:
+      - tempo-init
+    networks:
+      - app_network
+    profiles:
+      - monitoring
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:3200/ready"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    labels:
+      - "traefik.enable=true"
+      # UI route for Tempo
+      - "traefik.http.routers.tempo.rule=Host(`tempo.localhost`)"
+      - "traefik.http.routers.tempo.service=tempo"
+      - "traefik.http.services.tempo.loadbalancer.server.url=http://tempo:3200"
+
+  victoriametrics:
+    image: victoriametrics/victoria-metrics:latest
+    expose:
+      - 8428
+    networks:
+      - app_network
+    profiles:
+      - monitoring
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:8428/ready"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    labels:
+      # Disabling Traefik for VictoriaMetrics. Will be accessed by other services directly.
+      - "traefik.enable=false"
+
+  grafana:
+    image: grafana/grafana:latest
+    expose:
+      - 3000
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-storage:/var/lib/grafana
+      - ./infra/grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - loki
+      - tempo
+    networks:
+      - app_network
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/api/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    profiles:
+      - monitoring
+    labels:
+      - "traefik.enable=true"
+      # Main ingress route for Grafana
+      - "traefik.http.routers.grafana.rule=Host(`grafana.localhost`)"
+      - "traefik.http.routers.grafana.service=grafana"
+      - "traefik.http.services.grafana.loadbalancer.server.url=http://grafana:3000"
+
+  # -----------------------------------------------------------------------------------------------------------------------
+  # GATEWAYS
+  # -----------------------------------------------------------------------------------------------------------------------
+
+  hive-router:
+    image: ghcr.io/graphql-hive/apollo-router:latest
+    restart: on-failure
+    volumes:
+      - ./infra/hive/router.yaml:/dist/config/router.yaml
+    networks:
+      - app_network
+    expose:
+      - "8000"
+    environment:
+      HIVE_CDN_ENDPOINT: ${HIVE_CDN_ENDPOINT}
+      HIVE_CDN_KEY: ${HIVE_CDN_KEY}
+      HIVE_TOKEN: ${HIVE_TOKEN}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    labels:
+      - "traefik.enable=true"
+      # Main ingress route for Hive Router
+      - "traefik.http.routers.hive-router.rule=Host(`graphql.localhost`)"
+      - "traefik.http.routers.hive-router.service=hive-router"
+      - "traefik.http.services.hive-router.loadbalancer.server.url=http://hive-router:8000"
+
+  # -----------------------------------------------------------------------------------------------------------------------
+  # PROXY / LOAD BALANCER
+  # -----------------------------------------------------------------------------------------------------------------------
+
+  traefik:
+    image: traefik:v3.5
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+    environment:
+      OTLP_HTTP_ENDPOINT: http://otel-collector:4318/v1/traces
+    ports:
+      - "80:80"
+      - "8080:8080"
+    networks:
+      - app_network
+    depends_on:
+      - otel-collector
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:8080/ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    volumes:
+      - ./infra/traefik/traefik.local.yml:/etc/traefik/traefik.yml
+      - /var/run/docker.sock:/var/run/docker.sock
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+networks:
+  app_network:
+    name: app_network
+
+volumes:
+  db_data:
+  cache_data:
+  minio_data:
+  grafana-storage:
+  loki_data:

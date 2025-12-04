@@ -1,0 +1,47 @@
+receivers:
+  filelog:
+    include:
+      - /var/log/app/*.log
+    start_at: beginning
+    operators:
+      - type: json_parser
+        timestamp:
+          parse_from: attributes.time
+          layout_type: strptime
+          layout: "%Y-%m-%dT%H:%M:%S.%f%z"
+        severity:
+          parse_from: attributes.level
+    attributes:
+      service_name: '%{file_name}'
+  otlp:
+    protocols:
+      grpc:
+        endpoint: "0.0.0.0:4317"
+      http:
+        endpoint: "0.0.0.0:4318"
+
+exporters:
+  otlp:
+    endpoint: tempo:4317
+    tls:
+      insecure: true
+
+  otlphttp:
+    endpoint: http://loki:3100/otlp
+
+  debug:
+
+processors:
+  batch:
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [debug, otlp]
+
+    logs:
+      receivers: [filelog]
+      processors: [batch]
+      exporters: [otlphttp]

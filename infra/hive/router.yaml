@@ -1,0 +1,47 @@
+# yaml-language-server: $schema=./config_schema.json
+
+supergraph:
+  listen: 0.0.0.0:8000
+  introspection: true
+
+include_subgraph_errors:
+  all: true
+
+telemetry:
+  exporters:
+    tracing:
+      common:
+        service_name: "hive-router"
+        service_namespace: "app"
+      otlp:
+        enabled: true
+        endpoint: "http://otel-collector:4318"
+        protocol: http
+        batch_processor:
+          max_concurrent_exports: 1
+          max_export_batch_size: 512
+          max_export_timeout: 30s
+          max_queue_size: 2048
+          scheduled_delay: 5s
+
+headers:
+  all: # Header rules for all subgraphs
+    request:
+      - propagate:
+          named: Authorization
+      - propagate:
+          named: X-Session-Token
+      - propagate:
+          named: Cookie
+      - propagate:
+          named: Set-Cookie
+      - propagate:
+          named: X-CSRF-Token
+
+plugins:
+  hive.usage:
+    enabled: true
+    sample_rate: 0.5
+    exclude: ["IntrospectionQuery"]
+  hive.persisted_documents:
+    enabled: false

@@ -1,0 +1,47 @@
+{% extends "account/email/base_message.html" %}
+{% load i18n %}
+
+{% block content %}
+
+<div
+  style="
+    font-size: 16px;
+    font-weight: normal;
+    text-align: center;
+    padding: 16px 24px 16px 24px
+  "
+>
+  {% blocktrans %}
+    You are receiving this mail because the following change was made to your account:
+  {% endblocktrans %}
+</div>
+{% block notification_message %}{% endblock notification_message %}
+<div
+  style="
+    font-size: 16px;
+    font-weight: normal;
+    text-align: right;
+    padding: 16px 24px 16px 24px
+  "
+>
+  {% blocktrans with password_reset_url=password_reset_url  %}
+    If you do not recognize this change then please take proper security precautions immediately.
+    The change to your account originates from:
+  {% endblocktrans %}
+</div>
+<div
+  style="
+    font-size: 16px;
+    font-weight: normal;
+    text-align: right;
+    padding: 16px 24px 16px 24px
+  "
+>
+  <ul>
+    <li>IP address: {{ip}}</li>
+    <li>Browser: {{user_agent}}</li>
+    <li>Date: {{timestamp}}</li>
+  </ul>
+</div>
+
+{% endblock content %}

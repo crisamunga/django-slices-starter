@@ -2,72 +2,79 @@
 #    uv export --format requirements.txt --no-dev --no-hashes
 annotated-types==0.7.0
     # via pydantic
-anyio==4.10.0
+anyio==4.11.0
     # via httpx
-asgiref==3.9.1
+asgiref==3.10.0
     # via
     #   daphne
     #   django
     #   django-allauth
-attrs==25.3.0
+attrs==25.4.0
     # via
     #   service-identity
     #   twisted
-autobahn==24.4.2
+autobahn==25.10.2
     # via daphne
 automat==25.4.16
     # via twisted
-certifi==2025.8.3
+certifi==2025.11.12
     # via
     #   httpcore
     #   httpx
     #   requests
-cffi==2.0.0 ; platform_python_implementation != 'PyPy'
-    # via cryptography
-charset-normalizer==3.4.3
+cffi==2.0.0
+    # via
+    #   cryptography
+    #   pyroscope-io
+charset-normalizer==3.4.4
     # via requests
 click==8.3.0
     # via
     #   django-typer
     #   typer-slim
 colorama==0.4.6 ; sys_platform == 'win32'
-    # via click
+    # via
+    #   click
+    #   qrcode
 constantly==23.10.4
     # via twisted
-cryptography==45.0.7
+cryptography==46.0.3
     # via
     #   autobahn
+    #   fido2
     #   pyjwt
     #   pyopenssl
     #   service-identity
 daphne==4.2.1
     # via django-slices-starter
-django==5.2.6
+django==5.2.8
     # via
     #   django-allauth
     #   django-debug-toolbar
     #   django-ninja
     #   django-slices-starter
     #   django-typer
-django-allauth==65.11.2
+django-allauth==65.13.0
     # via django-slices-starter
-django-debug-toolbar==6.0.0
+django-debug-toolbar==6.1.0
     # via django-slices-starter
-django-ninja==1.4.3
+django-ninja==1.5.0
     # via django-slices-starter
-django-typer==3.3.2
+django-typer==3.4.0
     # via django-slices-starter
 dnspython==2.8.0
     # via email-validator
 email-validator==2.3.0
     # via pydantic
-googleapis-common-protos==1.70.0
+fido2==2.0.0
+    # via django-allauth
+googleapis-common-protos==1.72.0
     # via
     #   opentelemetry-exporter-otlp-proto-grpc
     #   opentelemetry-exporter-otlp-proto-http
-graphql-core==3.2.6
+graphql-core==3.2.7
     # via strawberry-graphql
-grpcio==1.74.0
+grpcio==1.76.0
     # via opentelemetry-exporter-otlp-proto-grpc
 h11==0.16.0
     # via httpcore
@@ -79,7 +86,7 @@ hyperlink==21.0.0
     # via
     #   autobahn
     #   twisted
-idna==3.10
+idna==3.11
     # via
     #   anyio
     #   email-validator
@@ -99,7 +106,7 @@ mdurl==0.1.2
     # via markdown-it-py
 oauthlib==3.3.1
     # via django-allauth
-opentelemetry-api==1.37.0
+opentelemetry-api==1.38.0
     # via
     #   opentelemetry-exporter-otlp-proto-grpc
     #   opentelemetry-exporter-otlp-proto-http
@@ -113,17 +120,17 @@ opentelemetry-api==1.37.0
     #   opentelemetry-sdk
     #   opentelemetry-semantic-conventions
     #   strawberry-graphql
-opentelemetry-exporter-otlp==1.37.0
+opentelemetry-exporter-otlp==1.38.0
     # via django-slices-starter
-opentelemetry-exporter-otlp-proto-common==1.37.0
+opentelemetry-exporter-otlp-proto-common==1.38.0
     # via
     #   opentelemetry-exporter-otlp-proto-grpc
     #   opentelemetry-exporter-otlp-proto-http
-opentelemetry-exporter-otlp-proto-grpc==1.37.0
+opentelemetry-exporter-otlp-proto-grpc==1.38.0
     # via opentelemetry-exporter-otlp
-opentelemetry-exporter-otlp-proto-http==1.37.0
+opentelemetry-exporter-otlp-proto-http==1.38.0
     # via opentelemetry-exporter-otlp
-opentelemetry-instrumentation==0.58b0
+opentelemetry-instrumentation==0.59b0
     # via
     #   opentelemetry-instrumentation-dbapi
     #   opentelemetry-instrumentation-django
@@ -131,29 +138,29 @@ opentelemetry-instrumentation==0.58b0
     #   opentelemetry-instrumentation-psycopg
     #   opentelemetry-instrumentation-requests
     #   opentelemetry-instrumentation-wsgi
-opentelemetry-instrumentation-dbapi==0.58b0
+opentelemetry-instrumentation-dbapi==0.59b0
     # via opentelemetry-instrumentation-psycopg
-opentelemetry-instrumentation-django==0.58b0
+opentelemetry-instrumentation-django==0.59b0
     # via django-slices-starter
-opentelemetry-instrumentation-httpx==0.58b0
+opentelemetry-instrumentation-httpx==0.59b0
     # via django-slices-starter
-opentelemetry-instrumentation-psycopg==0.58b0
+opentelemetry-instrumentation-psycopg==0.59b0
     # via django-slices-starter
-opentelemetry-instrumentation-requests==0.58b0
+opentelemetry-instrumentation-requests==0.59b0
     # via django-slices-starter
-opentelemetry-instrumentation-wsgi==0.58b0
+opentelemetry-instrumentation-wsgi==0.59b0
     # via opentelemetry-instrumentation-django
-opentelemetry-proto==1.37.0
+opentelemetry-proto==1.38.0
     # via
     #   opentelemetry-exporter-otlp-proto-common
     #   opentelemetry-exporter-otlp-proto-grpc
     #   opentelemetry-exporter-otlp-proto-http
-opentelemetry-sdk==1.37.0
+opentelemetry-sdk==1.38.0
     # via
     #   opentelemetry-exporter-otlp-proto-grpc
     #   opentelemetry-exporter-otlp-proto-http
     #   strawberry-graphql
-opentelemetry-semantic-conventions==0.58b0
+opentelemetry-semantic-conventions==0.59b0
     # via
     #   opentelemetry-instrumentation
     #   opentelemetry-instrumentation-dbapi
@@ -162,7 +169,7 @@ opentelemetry-semantic-conventions==0.58b0
     #   opentelemetry-instrumentation-requests
     #   opentelemetry-instrumentation-wsgi
     #   opentelemetry-sdk
-opentelemetry-util-http==0.58b0
+opentelemetry-util-http==0.59b0
     # via
     #   opentelemetry-instrumentation-django
     #   opentelemetry-instrumentation-httpx
@@ -172,13 +179,13 @@ packaging==25.0
     # via
     #   opentelemetry-instrumentation
     #   strawberry-graphql
-protobuf==6.32.1
+protobuf==6.33.1
     # via
     #   googleapis-common-protos
     #   opentelemetry-proto
-psycopg==3.2.10
+psycopg==3.2.12
     # via django-slices-starter
-psycopg-binary==3.2.10 ; implementation_name != 'pypy'
+psycopg-binary==3.2.12 ; implementation_name != 'pypy'
     # via psycopg
 pyasn1==0.6.1
     # via
@@ -186,41 +193,42 @@ pyasn1==0.6.1
     #   service-identity
 pyasn1-modules==0.4.2
     # via service-identity
-pycparser==2.23 ; implementation_name != 'PyPy' and platform_python_implementation != 'PyPy'
+pycparser==2.23 ; implementation_name != 'PyPy'
     # via cffi
-pydantic==2.11.9
+pydantic==2.12.4
     # via
     #   django-ninja
     #   django-slices-starter
-pydantic-core==2.33.2
+pydantic-core==2.41.5
     # via pydantic
 pygments==2.19.2
     # via rich
 pyjwt==2.10.1
     # via django-allauth
-pyopenssl==25.1.0
+pyopenssl==25.3.0
     # via twisted
+pyroscope-io==0.8.11
+    # via django-slices-starter
 python-dateutil==2.9.0.post0
     # via strawberry-graphql
-python-dotenv==1.1.1
+python-dotenv==1.2.1
     # via django-slices-starter
-redis==6.4.0
+qrcode==8.2
+    # via django-allauth
+redis==7.0.1
     # via django-slices-starter
 requests==2.32.5
     # via
     #   django-allauth
     #   opentelemetry-exporter-otlp-proto-http
-restate-sdk==0.9.1
+restate-sdk==0.11.0
     # via django-slices-starter
-rich==14.1.0
+rich==14.2.0
     # via django-typer
 service-identity==24.2.0
     # via twisted
 setuptools==80.9.0
-    # via
-    #   autobahn
-    #   incremental
-    #   zope-interface
+    # via incremental
 shellingham==1.5.4
     # via django-typer
 six==1.17.0
@@ -231,16 +239,17 @@ sqlparse==0.5.3
     # via
     #   django
     #   django-debug-toolbar
-strawberry-graphql==0.282.0
+strawberry-graphql==0.285.0
     # via django-slices-starter
 twisted==25.5.0
     # via daphne
-txaio==25.6.1
+txaio==25.9.2
     # via autobahn
-typer-slim==0.19.2
+typer-slim==0.20.0
     # via django-typer
 typing-extensions==4.15.0
     # via
+    #   grpcio
     #   lia-web
     #   opentelemetry-api
     #   opentelemetry-exporter-otlp-proto-grpc
@@ -249,12 +258,11 @@ typing-extensions==4.15.0
     #   opentelemetry-semantic-conventions
     #   pydantic
     #   pydantic-core
-    #   restate-sdk
     #   strawberry-graphql
     #   twisted
     #   typer-slim
     #   typing-inspection
-typing-inspection==0.4.1
+typing-inspection==0.4.2
     # via pydantic
 tzdata==2025.2 ; sys_platform == 'win32'
     # via
@@ -269,5 +277,5 @@ wrapt==1.17.3
     #   opentelemetry-instrumentation-httpx
 zipp==3.23.0
     # via importlib-metadata
-zope-interface==8.0
+zope-interface==8.1.1
     # via twisted

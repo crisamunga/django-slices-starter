@@ -1,3 +1,5 @@
+# yaml-language-server: $https://www.schemastore.org/pre-commit-config.json
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v2.3.0
@@ -20,7 +22,6 @@ repos:
     hooks:
     - id: detect-secrets
       args: ['--baseline', '.secrets.baseline']
-      exclude: package.lock.json
   - repo: local
     hooks:
       - id: uv-export
@@ -34,4 +35,3 @@ repos:
         entry: mypy
         language: system
         types: [python]
-        stages: [pre-push, manual]

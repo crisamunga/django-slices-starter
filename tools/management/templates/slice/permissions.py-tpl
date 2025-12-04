@@ -1,0 +1,29 @@
+from lib.permissions import permission
+from core.models import User
+
+from .models import {{ camel_case_app_name }}
+
+
+@permission
+async def can_browse_{{ app_name }}s(*, auth_user: User) -> bool:
+    return False
+
+
+@permission
+async def can_read_{{ app_name }}(*, auth_user: User, {{ app_name }}: {{ camel_case_app_name }}) -> bool:
+    return False
+
+
+@permission
+async def can_edit_{{ app_name }}(*, auth_user: User, {{ app_name }}: {{ camel_case_app_name }}) -> bool:
+    return False
+
+
+@permission
+async def can_add_{{ app_name }}(*, auth_user: User) -> bool:
+    return False
+
+
+@permission
+async def can_delete_{{ app_name }}(*, auth_user: User, {{ app_name }}: {{ camel_case_app_name }}) -> bool:
+    return False

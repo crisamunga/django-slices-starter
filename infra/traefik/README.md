@@ -4,11 +4,9 @@ Traefik is used as the load balancer due to it's ease of configuration, service 
 
 ## Configuration
 
-## Docker Compose Services
+## Local setup
 
 Docker compose services are configured via labels.
-
-For this project, all endpoints are configured as routes on the domain to cater for same site cookies
 
 ## References
 
