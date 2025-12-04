@@ -1,7 +1,3 @@
----
-applyTo: '**/validators.py, **/validators/*.py'
----
-
 Apply the [python coding guidelines](./python.instructions.md) to all code.
 
 # Validators Instructions

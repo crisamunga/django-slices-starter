@@ -1,7 +1,3 @@
----
-applyTo: '**/rest.py, **/rest/*.py'
----
-
 Apply the [python coding guidelines](./python.instructions.md) to all code.
 
 # Guidelines for authoring rest apis

@@ -1,7 +1,3 @@
----
-applyTo: '**/models.py, **/models/*.py'
----
-
 Apply the [python coding guidelines](./python.instructions.md) to all code.
 
 # Models Instructions

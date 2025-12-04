@@ -1,7 +1,3 @@
----
-applyTo: '**/services.py, **/services/*.py'
----
-
 Apply the [python coding guidelines](./python.instructions.md) to all code.
 
 # Services Instructions

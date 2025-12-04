@@ -1,7 +1,3 @@
----
-applyTo: '**/permissions.py, **/permissions/*.py'
----
-
 Apply the [python coding guidelines](./python.instructions.md) to all code.
 
 # Permissions Instructions

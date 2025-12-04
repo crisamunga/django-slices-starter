@@ -1,7 +1,3 @@
----
-applyTo: '**/tests/*.py'
----
-
 Apply the [python coding guidelines](./python.instructions.md) to all code.
 
 # Testing Instructions

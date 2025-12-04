@@ -1,7 +1,3 @@
----
-applyTo: 'core/**/*.py'
----
-
 Apply the [python coding guidelines](./python.instructions.md) to all code
 
 # Slice Instructions
