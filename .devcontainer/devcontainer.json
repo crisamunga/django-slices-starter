@@ -9,7 +9,7 @@
   "features": {
     // "ghcr.io/devcontainers/features/aws-cli:1": {}, # - Uncomment this line to install the AWS CLI
     "ghcr.io/devcontainers/features/docker-in-docker:2": {},
-    "ghcr.io/devcontainers/features/node:1": {
+    "ghcr.io/devcontainers/features/node:2": {
       "version": "24"
     }
   },
